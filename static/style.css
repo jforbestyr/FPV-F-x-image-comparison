@@ -290,106 +290,67 @@ main {
 
 #download-btn { margin-left: auto; }
 
-/* ── Comparison container ──────────────────────────────────── */
-#comparison-container {
-  position: relative;
-  overflow: hidden;
+/* ── Side-by-side comparison ───────────────────────────────── */
+#comparison-view {
+  display: flex;
+  gap: 0;
   border-radius: var(--radius);
+  overflow: hidden;
   background: #000;
-  cursor: ew-resize;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: none;
-  /* Max height so very tall images don't overflow on mobile */
-  max-height: 75vh;
 }
 
-/* Simulated canvas: base layer, sets container height */
-#canvas-simulated {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: 75vh;
-  object-fit: contain;
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-/* Original image: absolute overlay, clipped to left of handle */
-#img-original {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  clip-path: inset(0 50% 0 0);
-  pointer-events: none;
-}
-
-/* Corner labels */
-.cmp-label {
-  position: absolute;
-  top: 0;
+.panel-label {
   padding: 8px 12px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+  color: var(--text);
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  pointer-events: none;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
 }
 
-.cmp-label--left  { left: 0;  color: var(--text); }
-.cmp-label--right { right: 0; text-align: right; color: var(--accent); }
+#panel-simulated .panel-label { color: var(--accent); }
 
-.cmp-meta {
+.panel-meta {
   font-weight: 400;
   font-size: 0.65rem;
   color: var(--muted);
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
-/* Drag handle */
-#cmp-handle {
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 3px;
-  background: rgba(255,255,255,0.85);
-  pointer-events: none;
-}
-
-#cmp-knob {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  background: #fff;
-  color: #0d0f12;
+.img-wrap {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
-  pointer-events: all;
-  cursor: ew-resize;
-  transition: transform 0.1s;
+  overflow: hidden;
 }
 
-#cmp-knob:active {
-  transform: translate(-50%, -50%) scale(0.92);
+.img-wrap img,
+.img-wrap canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
 }
 
-/* Pulse hint on first load */
-@keyframes pulse-hint {
-  0%   { box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 0 rgba(255,255,255,0.6); }
-  70%  { box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 12px rgba(255,255,255,0); }
-  100% { box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 0 rgba(255,255,255,0); }
-}
-#cmp-knob.hinting {
-  animation: pulse-hint 0.9s ease-out 2;
+.divider {
+  width: 2px;
+  background: var(--border);
+  flex-shrink: 0;
 }
 
 /* ── Utility ───────────────────────────────────────────────── */

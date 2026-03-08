@@ -30,9 +30,6 @@ const simulatedMeta    = $("simulated-meta");
 const downloadBtn      = $("download-btn");
 const resetBtn         = $("reset-btn");
 const exportCanvas     = $("export-canvas");
-const cmpContainer     = $("comparison-container");
-const cmpHandle        = $("cmp-handle");
-const cmpKnob          = $("cmp-knob");
 
 /* ── Upload / drag-drop ──────────────────────────────────── */
 dropZone.addEventListener("click", () => fileInput.click());
@@ -114,7 +111,6 @@ async function processFile(file) {
     }
 
     applySimulation();
-    initSliderHandle();
     show("result");
 
   } catch (err) {
@@ -377,42 +373,6 @@ numberF.addEventListener("change", () => {
   numberF.value = fmtF(v);
   applySimulation();
 });
-
-/* ── Comparison reveal slider ────────────────────────────── */
-let handlePct  = 50;
-let isDragging = false;
-
-function setHandle(pct) {
-  handlePct = Math.max(2, Math.min(98, pct));
-  cmpHandle.style.left        = `${handlePct}%`;
-  imgOriginal.style.clipPath  = `inset(0 ${(100 - handlePct).toFixed(2)}% 0 0)`;
-}
-
-function initSliderHandle() {
-  setHandle(50);
-  // Pulse hint
-  cmpKnob.classList.remove("hinting");
-  void cmpKnob.offsetWidth; // reflow
-  cmpKnob.classList.add("hinting");
-}
-
-function getEventX(e) {
-  return (e.touches ? e.touches[0] : e).clientX;
-}
-
-function onDragMove(e) {
-  if (!isDragging) return;
-  if (e.cancelable) e.preventDefault();
-  const rect = cmpContainer.getBoundingClientRect();
-  setHandle(((getEventX(e) - rect.left) / rect.width) * 100);
-}
-
-cmpContainer.addEventListener("mousedown",  (e) => { isDragging = true; onDragMove(e); });
-cmpContainer.addEventListener("touchstart", (e) => { isDragging = true; onDragMove(e); }, { passive: false });
-window.addEventListener("mousemove",  onDragMove);
-window.addEventListener("touchmove",  onDragMove, { passive: false });
-window.addEventListener("mouseup",    () => { isDragging = false; });
-window.addEventListener("touchend",   () => { isDragging = false; });
 
 /* ── Download ────────────────────────────────────────────── */
 downloadBtn.addEventListener("click", downloadComparison);
