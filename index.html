@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F-Stop Comparison</title>
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>F-Stop Exposure Comparison</h1>
+    <p class="subtitle">Upload a Sony ARW (or other RAW) file — compare original vs simulated aperture</p>
+  </header>
+
+  <main>
+    <!-- Upload zone -->
+    <section id="upload-section">
+      <div id="drop-zone">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p>Drop a Sony ARW file here</p>
+        <span>or</span>
+        <label class="btn-primary">Browse File</label>
+        <input type="file" id="file-input" accept=".arw,.ARW,.raw,.RAW,.cr2,.CR2,.nef,.NEF,.dng,.DNG" />
+      </div>
+    </section>
+
+    <!-- Loading -->
+    <section id="loading-section" class="hidden">
+      <div class="spinner"></div>
+      <p id="loading-msg">Extracting preview from RAW file…</p>
+    </section>
+
+    <!-- Error -->
+    <div id="error-banner" class="hidden"></div>
+
+    <!-- Results -->
+    <section id="result-section" class="hidden">
+
+      <!-- EXIF strip -->
+      <div id="exif-strip">
+        <div class="exif-item" id="ei-camera"><span class="label">Camera</span><span class="value" id="exif-camera">—</span></div>
+        <div class="exif-item" id="ei-lens"><span class="label">Lens</span><span class="value" id="exif-lens">—</span></div>
+        <div class="exif-item"><span class="label">Original f/</span><span class="value" id="exif-f">—</span></div>
+        <div class="exif-item"><span class="label">Shutter</span><span class="value" id="exif-shutter">—</span></div>
+        <div class="exif-item"><span class="label">ISO</span><span class="value" id="exif-iso">—</span></div>
+        <div class="exif-item"><span class="label">Focal Length</span><span class="value" id="exif-fl">—</span></div>
+      </div>
+
+      <!-- Controls -->
+      <div id="controls">
+        <div class="control-group">
+          <label for="target-f">Simulate at <span class="accent">f/<span id="target-f-display">2.8</span></span></label>
+          <input type="range" id="target-f" min="-1.74" max="6" step="0.01" value="1.49" />
+        </div>
+        <div class="control-group ev-badge">
+          <span id="ev-label">— stops</span>
+        </div>
+        <div class="control-group">
+          <label for="target-f-number">Enter f/ value</label>
+          <input type="number" id="target-f-number" min="0.3" max="64" step="0.1" value="2.8" />
+        </div>
+        <button id="download-btn" class="btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Comparison
+        </button>
+      </div>
+
+      <!-- Side-by-side -->
+      <div id="comparison-view">
+        <div class="panel" id="panel-original">
+          <div class="panel-label">
+            <span>Original</span>
+            <span class="panel-meta" id="original-meta"></span>
+          </div>
+          <div class="img-wrap">
+            <img id="img-original" alt="Original" />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="panel" id="panel-simulated">
+          <div class="panel-label">
+            <span id="sim-label">Simulated</span>
+            <span class="panel-meta" id="simulated-meta"></span>
+          </div>
+          <div class="img-wrap">
+            <canvas id="canvas-simulated"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <button id="reset-btn">Upload a different file</button>
+    </section>
+  </main>
+
+  <!-- Hidden canvas for download -->
+  <canvas id="export-canvas" style="display:none"></canvas>
+
+  <!-- exifr: battle-tested JS EXIF parser, works on RAW/TIFF files -->
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7/dist/full.umd.cjs"></script>
+  <script src="static/app.js"></script>
+</body>
+</html>
