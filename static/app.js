@@ -50,37 +50,58 @@ fileInput.addEventListener("change", () => {
   if (fileInput.files[0]) processFile(fileInput.files[0]);
 });
 
+/* ── Format detection ────────────────────────────────────── */
+const RAW_EXTS = new Set(["arw", "raw", "cr2", "cr3", "nef", "dng", "raf", "orf", "rw2", "pef", "srw"]);
+
+function isRawFile(file) {
+  const ext = file.name.split(".").pop().toLowerCase();
+  return RAW_EXTS.has(ext);
+}
+
 /* ── File processing (browser-side, no server needed) ───── */
 async function processFile(file) {
   showError(null);
   show("loading");
-  loadingMsg.textContent = "Reading RAW file…";
 
   try {
-    const buffer = await file.arrayBuffer();
+    let imageUrl, exif;
 
-    loadingMsg.textContent = "Extracting EXIF metadata…";
-    const exif = await extractEXIF(buffer);
+    if (isRawFile(file)) {
+      // ── RAW path: extract embedded JPEG preview + EXIF from binary ──
+      loadingMsg.textContent = "Reading RAW file…";
+      const buffer = await file.arrayBuffer();
 
-    loadingMsg.textContent = "Extracting preview image…";
-    const jpegBytes = extractEmbeddedJPEG(buffer);
-    if (!jpegBytes || jpegBytes.length < 10_000) {
-      throw new Error(
-        "No usable embedded preview found in this file. " +
-        "Sony ARW, Canon CR2, Nikon NEF, and DNG are supported."
-      );
+      loadingMsg.textContent = "Extracting EXIF metadata…";
+      exif = await extractEXIF(buffer);
+
+      loadingMsg.textContent = "Extracting preview image…";
+      const jpegBytes = extractEmbeddedJPEG(buffer);
+      if (!jpegBytes || jpegBytes.length < 10_000) {
+        throw new Error(
+          "No usable embedded preview found. " +
+          "Sony ARW, Canon CR2/CR3, Nikon NEF, and DNG are supported."
+        );
+      }
+      const rawBlob = new Blob([jpegBytes], { type: "image/jpeg" });
+      const rawUrl  = URL.createObjectURL(rawBlob);
+      loadingMsg.textContent = "Preparing display image…";
+      imageUrl = await resizeForDisplay(rawUrl, 1600);
+      URL.revokeObjectURL(rawUrl);
+
+    } else {
+      // ── Direct image path: JPEG, PNG, HEIC, WebP, TIFF ──
+      loadingMsg.textContent = "Reading image…";
+      exif = await extractEXIF(await file.arrayBuffer());
+
+      // Use the file directly — browser decodes natively
+      const directUrl = URL.createObjectURL(file);
+      loadingMsg.textContent = "Preparing display image…";
+      imageUrl = await resizeForDisplay(directUrl, 1600);
+      URL.revokeObjectURL(directUrl);
     }
 
-    // Create a blob URL from the embedded JPEG
-    const rawBlob = new Blob([jpegBytes], { type: "image/jpeg" });
-    const rawUrl  = URL.createObjectURL(rawBlob);
-
-    loadingMsg.textContent = "Preparing display image…";
-    const displayUrl = await resizeForDisplay(rawUrl, 1600);
-    URL.revokeObjectURL(rawUrl);
-
     if (state.imageUrl) URL.revokeObjectURL(state.imageUrl);
-    state.imageUrl = displayUrl;
+    state.imageUrl = imageUrl;
     state.exif = exif;
 
     populateExif(exif);
